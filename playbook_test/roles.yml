@@ -1,0 +1,9 @@
+- name: Run the php info
+  hosts: dev
+  roles:
+    - geerlingguy.haproxy
+
+- name: run the balancer
+  hosts: balancers
+  roles:
+    - phpinfo

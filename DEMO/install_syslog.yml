@@ -1,0 +1,45 @@
+---
+- name: Instalar y configurar rsyslog en Rocky Linux
+  hosts: rhel9_hosts
+  become: yes
+  tasks:
+    - name: Asegurarse de que el repositorio base está disponible
+      dnf:
+        name: rocky-release
+        state: latest
+
+    - name: Instalar rsyslog
+      dnf:
+        name: rsyslog
+        state: present
+
+    - name: Asegurarse de que rsyslog está iniciado y habilitado
+      systemd:
+        name: rsyslog
+        state: started
+        enabled: yes
+
+    - name: Configuración básica de rsyslog (opcional)
+      blockinfile:
+        path: /etc/rsyslog.conf
+        block: |
+          # Configuración básica de rsyslog
+          $ModLoad imudp
+          $UDPServerRun 514
+          $ModLoad imtcp
+          $InputTCPServerRun 514
+        insertafter: EOF
+      notify: Reiniciar rsyslog
+
+    - name: Asegurarse de que los logs se guardan en /var/log/messages
+      lineinfile:
+        path: /etc/rsyslog.conf
+        regexp: '^.*\*\.info;mail.none;authpriv.none;cron.none                /var/log/messages'
+        line: '*.info;mail.none;authpriv.none;cron.none                /var/log/messages'
+      notify: Reiniciar rsyslog
+
+  handlers:
+    - name: Reiniciar rsyslog
+      systemd:
+        name: rsyslog
+        state: restarted

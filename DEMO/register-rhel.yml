@@ -1,0 +1,17 @@
+---
+- name: Registrar y subscribir máquina virtual a Red Hat Subscription Manager
+  hosts: all
+  become: yes
+  
+  tasks:
+    - name: Registrar y subscribir el sistema usando activation key
+      redhat_subscription:
+        state: present
+        org_id: "18091326"
+        activationkey: "RedHatGuzdan"
+      register: subscription_result
+
+    - name: Verificar estado de la suscripción
+      debug:
+        msg: "Sistema registrado exitosamente con estado: {{ subscription_result.state }}"
+      when: subscription_result.changed

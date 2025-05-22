@@ -1,0 +1,9 @@
+- name: Install Namecoin on Windows hosts
+  hosts: windows
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Install Namecoin using Chocolatey
+      win_chocolatey:
+        name: namecoin
+        state: present

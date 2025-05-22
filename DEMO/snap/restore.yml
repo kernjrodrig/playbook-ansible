@@ -1,0 +1,36 @@
+- name: Revert VM to a specific snapshot
+  hosts: localhost
+  become: false
+  gather_facts: false
+  
+  vars_files:
+    - vars.yml
+  
+  vars:
+    vm_name: "AAP-Master01"              # Nombre de la VM
+    snapshot_name: "snap1_rhel8"  # Nombre del snapshot al que revertir
+  
+  tasks:
+    - name: Revert VM to specified snapshot
+      community.vmware.vmware_guest_snapshot:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        datacenter: "{{ datacenter_name }}"
+        validate_certs: "{{ vcenter_validate_certs }}"
+        folder: "/Datacenter-Guz/vm/Ansible"  # Ajusta según tu entorno
+        name: "{{ vm_name }}"
+        state: revert                        # Indica que queremos revertir
+        snapshot_name: "{{ snapshot_name }}"
+      delegate_to: localhost
+      register: snapshot_revert_result
+
+    - name: Display revert result
+      ansible.builtin.debug:
+        msg: "Snapshot '{{ snapshot_name }}' reverted successfully for VM '{{ vm_name }}'"
+      when: snapshot_revert_result.changed
+
+    - name: Display error if revert fails
+      ansible.builtin.debug:
+        msg: "Failed to revert snapshot: {{ snapshot_revert_result.msg }}"
+      when: snapshot_revert_result.failed is defined and snapshot_revert_result.failed

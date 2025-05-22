@@ -1,0 +1,11 @@
+---
+- hosts: new
+  tasks:
+    - name: copia archivo local al remoto
+      ansible.builtin.template:
+        src: /home/ansible/aprovicionamiento/rhsm.conf
+        dest: /etc/rhsm/
+
+    - name: ver si se cambio el archivo
+      ansible.builtin.shell:
+        cmd: ls -ltr /etc/rhsm/

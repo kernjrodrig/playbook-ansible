@@ -1,0 +1,23 @@
+---
+- name: Ver el estado del servicio SNMP en Windows
+  hosts: windows
+  become: yes
+  become_method: runas  # Método correcto para Windows
+  become_user: Administrator  # Usuario con privilegios elevados
+  vars:
+    ansible_become_password: "{{ ansible_password }}"  # Contraseña del usuario
+  tasks:
+    - name: Obtener información del servicio SNMP
+      ansible.windows.win_service_info:
+        name: SNMP  # Filtra solo el servicio SNMP
+      register: snmp_info
+
+    - name: Mostrar el estado del servicio SNMP
+      debug:
+        msg: "El servicio SNMP está {{ snmp_info.services[0].state }} (Tipo de inicio: {{ snmp_info.services[0].start_mode }})"
+      when: snmp_info.services | length > 0  # Verifica que el servicio exista
+
+    - name: Advertencia si el servicio SNMP no está instalado
+      debug:
+        msg: "El servicio SNMP no está instalado o no se encontró en el sistema."
+      when: snmp_info.services | length == 0  # Si no se encuentra el servicio

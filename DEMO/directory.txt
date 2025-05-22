@@ -1,0 +1,193 @@
+.
+├── cron.yml
+├── directory.txt
+├── install_syslog.yml
+├── log_depura.yml
+├── ntp.yml
+├── register-rhel.yml
+├── rhel_update
+│   ├── update_playbook_v2.yml
+│   ├── update_playbook.yml
+│   └── vars
+│       └── exclude_vars.yml
+├── rhel_upgrade
+│   ├── infra.leapp
+│   │   ├── CHANGELOG.rst
+│   │   ├── changelogs
+│   │   │   ├── changelog.yaml
+│   │   │   ├── config.yaml
+│   │   │   └── fragments
+│   │   │       ├── rhel7-remediate.yml
+│   │   │       └── use-community.general.yml
+│   │   ├── CODE_OF_CONDUCT.md
+│   │   ├── CODEOWNERS
+│   │   ├── CONTRIBUTING.md
+│   │   ├── docs
+│   │   │   └── docsite
+│   │   │       └── links.yml
+│   │   ├── galaxy.yml
+│   │   ├── LICENSE
+│   │   ├── MAINTAINING.md
+│   │   ├── meta
+│   │   │   └── runtime.yml
+│   │   ├── playbooks
+│   │   │   ├── analysis.yml
+│   │   │   ├── remediate.yml
+│   │   │   ├── rolling_upgrade_ha_cluster.yml
+│   │   │   ├── upgrade.yml
+│   │   │   └── vars
+│   │   │       └── satellite_keys.yml
+│   │   ├── plugins
+│   │   ├── README.md
+│   │   ├── requirements.yml
+│   │   ├── REVIEW_CHECKLIST.md
+│   │   ├── roles
+│   │   │   ├── analysis
+│   │   │   │   ├── defaults
+│   │   │   │   │   └── main.yml
+│   │   │   │   ├── files
+│   │   │   │   │   └── check-inodes.sh
+│   │   │   │   ├── handlers
+│   │   │   │   │   └── main.yml
+│   │   │   │   ├── meta
+│   │   │   │   │   └── main.yml
+│   │   │   │   ├── README.md
+│   │   │   │   ├── tasks
+│   │   │   │   │   ├── analysis-leapp.yml
+│   │   │   │   │   ├── analysis-preupg.yml
+│   │   │   │   │   ├── check-results-file.yml
+│   │   │   │   │   └── main.yml
+│   │   │   │   ├── templates
+│   │   │   │   ├── tests
+│   │   │   │   │   ├── inventory
+│   │   │   │   │   └── test.yml
+│   │   │   │   └── vars
+│   │   │   │       └── main.yml
+│   │   │   ├── common
+│   │   │   │   ├── defaults
+│   │   │   │   │   └── main.yml
+│   │   │   │   ├── files
+│   │   │   │   ├── handlers
+│   │   │   │   │   └── main.yml
+│   │   │   │   ├── meta
+│   │   │   │   │   └── main.yml
+│   │   │   │   ├── README.md
+│   │   │   │   ├── tasks
+│   │   │   │   │   ├── custom_local_repos.yml
+│   │   │   │   │   └── main.yml
+│   │   │   │   ├── templates
+│   │   │   │   ├── tests
+│   │   │   │   │   ├── inventory
+│   │   │   │   │   └── test.yml
+│   │   │   │   └── vars
+│   │   │   │       └── main.yml
+│   │   │   ├── parse_leapp_report
+│   │   │   │   ├── defaults
+│   │   │   │   │   └── main.yml
+│   │   │   │   ├── files
+│   │   │   │   ├── handlers
+│   │   │   │   │   └── main.yml
+│   │   │   │   ├── meta
+│   │   │   │   │   └── main.yml
+│   │   │   │   ├── README.md
+│   │   │   │   ├── tasks
+│   │   │   │   │   └── main.yml
+│   │   │   │   ├── templates
+│   │   │   │   ├── tests
+│   │   │   │   │   ├── inventory
+│   │   │   │   │   └── test.yml
+│   │   │   │   └── vars
+│   │   │   │       └── main.yml
+│   │   │   ├── remediate
+│   │   │   │   ├── defaults
+│   │   │   │   │   └── main.yml
+│   │   │   │   ├── handlers
+│   │   │   │   │   └── main.yml
+│   │   │   │   ├── meta
+│   │   │   │   │   └── main.yml
+│   │   │   │   ├── README.md
+│   │   │   │   ├── tasks
+│   │   │   │   │   ├── leapp_cifs_detected.yml
+│   │   │   │   │   ├── leapp_corrupted_grubenv_file.yml
+│   │   │   │   │   ├── leapp_custom_network_scripts_detected.yml
+│   │   │   │   │   ├── leapp_deprecated_sshd_directive.yml
+│   │   │   │   │   ├── leapp_firewalld_allowzonedrifting.yml
+│   │   │   │   │   ├── leapp_firewalld_unsupported_tftp_client.yml
+│   │   │   │   │   ├── leapp_loaded_removed_kernel_drivers.yml
+│   │   │   │   │   ├── leapp_missing_efibootmgr.yml
+│   │   │   │   │   ├── leapp_missing_pkg.yml
+│   │   │   │   │   ├── leapp_missing_yum_plugins.yml
+│   │   │   │   │   ├── leapp_multiple_kernels.yml
+│   │   │   │   │   ├── leapp_newest_kernel_not_in_use.yml
+│   │   │   │   │   ├── leapp_nfs_detected.yml
+│   │   │   │   │   ├── leapp_non_persistent_partitions.yml
+│   │   │   │   │   ├── leapp_non_standard_openssl_config.yml
+│   │   │   │   │   ├── leapp_old_postgresql_data.yml
+│   │   │   │   │   ├── leapp_pam_tally2.yml
+│   │   │   │   │   ├── leapp_partitions_with_noexec.yml
+│   │   │   │   │   ├── leapp_relative_symlinks.yml
+│   │   │   │   │   ├── leapp_remote_using_root.yml
+│   │   │   │   │   ├── leapp_rpms_with_rsa_sha1_detected.yml
+│   │   │   │   │   ├── leapp_unavailable_kde.yml
+│   │   │   │   │   ├── leapp_vdo_check_needed.yml
+│   │   │   │   │   └── main.yml
+│   │   │   │   ├── templates
+│   │   │   │   ├── tests
+│   │   │   │   │   ├── inventory
+│   │   │   │   │   └── test.yml
+│   │   │   │   └── vars
+│   │   │   │       └── main.yml
+│   │   │   └── upgrade
+│   │   │       ├── defaults
+│   │   │       │   └── main.yml
+│   │   │       ├── handlers
+│   │   │       │   └── main.yml
+│   │   │       ├── meta
+│   │   │       │   ├── argument_spec.yml
+│   │   │       │   ├── collection-requirements.yml
+│   │   │       │   └── main.yml
+│   │   │       ├── README.md
+│   │   │       ├── tasks
+│   │   │       │   ├── check-for-old-packages.yml
+│   │   │       │   ├── disable-previous-repo-files.yml
+│   │   │       │   ├── grub2-upgrade.yml
+│   │   │       │   ├── leapp-post-upgrade-crypto.yml
+│   │   │       │   ├── leapp-post-upgrade-selinux.yml
+│   │   │       │   ├── leapp-post-upgrade.yml
+│   │   │       │   ├── leapp-upgrade-validation.yml
+│   │   │       │   ├── leapp-upgrade.yml
+│   │   │       │   ├── main.yml
+│   │   │       │   ├── redhat-upgrade-tool-post-upgrade.yml
+│   │   │       │   ├── redhat-upgrade-tool-upgrade.yml
+│   │   │       │   ├── rmmod-kernel-modules.yml
+│   │   │       │   ├── update-and-reboot.yml
+│   │   │       │   └── upgrade-validation.yml
+│   │   │       ├── templates
+│   │   │       │   └── etc_default_grub.j2
+│   │   │       ├── tests
+│   │   │       │   ├── inventory
+│   │   │       │   └── test.yml
+│   │   │       └── vars
+│   │   │           └── main.yml
+│   │   └── tests
+│   │       ├── integration
+│   │       │   └── targets
+│   │       ├── sanity
+│   │       └── units
+│   └── rhel_upgrade.yml
+├── snap
+│   ├── backup.yml
+│   ├── list_vm.yml
+│   ├── restore.yml
+│   ├── snap-list.yml
+│   └── vars.yml
+├── ssh.yml
+├── vm_esxi
+│   ├── vars.yml
+│   └── vm.yml
+└── vulnerabilidad
+    ├── ospp-results-192.168.10.57.xml
+    ├── scan-insights.yml
+    └── scan.yml
+
+64 directories, 126 files

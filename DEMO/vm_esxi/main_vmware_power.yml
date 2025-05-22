@@ -1,0 +1,11 @@
+---
+- name: Main Playbook to Control VMware VM Power State
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: Include power management tasks
+      include_tasks: vmware_power_playbook.yml
+      vars:
+        vm_state: "{{ power_state | default('poweredon') }}"

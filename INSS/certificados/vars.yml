@@ -1,0 +1,40 @@
+---
+clusters:
+  - name: cluster1
+    api_url: "https://api.cluster-qkhtn.dynamic.redhatworkshops.io:6443"
+    token: "sha256~ElUy7URWyvdQ4seEQRFV2M1gKJaKK5g707uhzjZf3TM"
+    secret_name: "cert-manager-ingress-cert"
+    namespace_ingress: "openshift-ingress"
+    cert_file: "/tmp/cluster1-ingress-cert.pem"
+    cert_file_new: ingress-15.pem
+    key_file_new: ingress-15.pem
+    backup_file: "/tmp/ingress-backup-cluster1.yaml"
+    namespace_ingress_operator: openshift-ingress-operator
+    ingress_controller_name: default
+
+  # - name: minicluster
+  #   api_url: "https://api.minicluster.guzdan:6443"
+  #   username: "kubeadmin"
+  #   password: "ygcpW-iI4Cn-rqPBU-Dt3cG"
+  #   token: "sha256~gL0rA7EB0tcsNC4f98qujDLE8n_iddtDKateMi9Wets"
+  #   secret_name: "ingress-tls-secret"
+  #   namespace_ingress: "openshift-ingress"
+  #   namespace_ingress_operator: openshift-ingress-operator
+  #   ingress_controller_name: default
+  #   cert_file: "/tmp/cluster2-ingress-cert.pem"
+  #   cert_file_new: ingress-15.pem
+  #   key_file_new: ingress-15.pem
+  #   backup_file: "/tmp/ingress-backup-{{ item.name }}.yaml"
+
+  - name: cluster2
+    api_url: "https://api.cluster-bmktm-1.dynamic.redhatworkshops.io:6443"
+    token: "sha256~XgOYkacLoV_s55OabO3pcXWpCku5Qzz8hj3OG2w5wJQ"
+    secret_name: "ingress-tls-secret"
+    #secret_name: "cert-manager-ingress-cert"
+    namespace_ingress: "openshift-ingress"
+    cert_file: "/tmp/cluster2-ingress-cert.pem"
+    cert_file_new: ingress-60-cert.pem
+    key_file_new: ingress-60-key.pem
+    backup_file: "/tmp/ingress-backup-cluster2.yaml"
+    namespace_ingress_operator: openshift-ingress-operator
+    ingress_controller_name: default

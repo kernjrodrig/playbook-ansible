@@ -1,0 +1,24 @@
+- name: List all VMs in Guz-Dev datacenter
+  hosts: localhost
+  become: false
+  gather_facts: false
+  
+  vars_files:
+    - vars.yml
+  
+  tasks:
+    - name: Gather VM information from vCenter
+      community.vmware.vmware_vm_info:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: "{{ vcenter_validate_certs }}"
+        # Opcional: Si necesitas filtrar por folder, descomenta y ajusta la línea siguiente
+        # folder: "/{{ datacenter_name }}/vm"
+      delegate_to: localhost
+      register: vm_list
+
+    - name: Display all VMs
+      ansible.builtin.debug:
+        msg: "VM Name: {{ item.guest_name }}, Power State: {{ item.power_state }}, Folder: {{ item.folder }}"
+      loop: "{{ vm_list.virtual_machines }}"

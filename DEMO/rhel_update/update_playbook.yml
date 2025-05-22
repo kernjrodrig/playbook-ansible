@@ -1,0 +1,28 @@
+---
+- name: Actualizar paquetes en RHEL excluyendo aplicaciones específicas
+  hosts: all                # Puedes especificar un grupo de hosts en tu inventario
+  become: true              # Necesitamos privilegios de root para actualizar
+  vars_files:
+    - vars/exclude_vars.yml # Incluye el archivo de variables externas
+
+  tasks:
+    - name: Actualizar todos los paquetes excepto los excluidos
+      ansible.builtin.dnf:
+        name: "*"             # "*" indica que se actualizan todos los paquetes
+        state: latest         # Asegura que se instale la última versión disponible
+        exclude: "{{ excluded_packages | join(',') }}"  # Excluye los paquetes listados
+      register: dnf_result  # Registra el resultado para inspección
+
+    # - name: Mostrar resultado de la actualización
+    #   ansible.builtin.debug:
+    #     msg: "Actualización completada. Paquetes actualizados: {{ dnf_result.results | map(attribute='name') | join(', ') }}"
+    #   when: dnf_result.changed  # Solo muestra si hubo cambios
+    - name: Mostrar el contenido completo de dnf_result
+      ansible.builtin.debug:
+        msg: "Actualización completada. Paquetes actualizados: {{ dnf_result.results | join(', ') }}"
+      when: dnf_result.changed
+
+    - name: Mostrar mensaje si no hubo cambios
+      ansible.builtin.debug:
+        msg: "No se realizaron actualizaciones. El sistema ya está al día."
+      when: not dnf_result.changed

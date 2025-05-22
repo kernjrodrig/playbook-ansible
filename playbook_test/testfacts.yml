@@ -1,0 +1,12 @@
+- name: Desfragmentador de memoria
+  hosts: localhost
+  tasks:
+
+    - name: print return
+      ansible.builtin.shell: /usr/bin/uptime
+      register: result
+
+    - name: ahora si print
+      ansible.builtin.debug:
+        var: result
+        verbosity: 2 

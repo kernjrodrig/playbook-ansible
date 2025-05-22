@@ -1,0 +1,27 @@
+---
+- name: Detener y verificar el servicio httpd con systemd
+  hosts: webservers
+  become: yes  # Necesario para gestionar servicios
+  tasks:
+    - name: Detener el servicio httpd
+      ansible.builtin.systemd:
+        name: httpd
+        state: stopped
+      register: stop_result  # Guarda el resultado de la detención
+
+    - name: Verificar el estado del servicio httpd
+      ansible.builtin.systemd:
+        name: httpd
+        state: stopped  # No cambia el estado, solo consulta
+      register: status_result
+      changed_when: false  # Esta tarea solo verifica, no modifica
+
+    - name: Mostrar resultado de la detención
+      ansible.builtin.debug:
+        msg: "El servicio httpd fue detenido. Estado actual: {{ status_result.status.ActiveState }}"
+      when: stop_result.changed
+
+    - name: Mensaje si el servicio ya estaba detenido
+      ansible.builtin.debug:
+        msg: "El servicio httpd ya estaba detenido. Estado actual: {{ status_result.status.ActiveState }}"
+      when: not stop_result.changed

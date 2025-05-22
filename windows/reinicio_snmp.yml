@@ -1,0 +1,10 @@
+---
+- name: Reiniciar el servicio SNMP en hosts de Windows
+  hosts: windows
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Reiniciar el servicio SNMP
+      win_service:
+        name: snmp
+        state: restarted

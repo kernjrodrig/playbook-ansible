@@ -1,0 +1,36 @@
+---
+- name: Reiniciar máquinas virtuales en vCenter
+  hosts: aap
+  gather_facts: no
+  collections:
+    - community.vmware
+
+  vars:
+    vcenter_hostname: "192.168.10.15"  # Reemplaza con el hostname o IP de tu vCenter
+    vcenter_username: "administrator@vsphere.local"  # Reemplaza con tu usuario de vCenter
+    vcenter_password: "Temporal123$"  # Reemplaza con tu contraseña
+    vcenter_datacenter: "Datacenter-Guz"  # Reemplaza con el nombre de tu datacenter
+    vcenter_validate_certs: false  # Desactiva la validación de certificados si es necesario
+    vm_names:  # Lista de nombres de las máquinas virtuales a reiniciar
+      - "AAP-Master01"
+      - "AAP-Master02"
+      - "AAP-Master03"
+      - "AAP-Master04"
+      - "AAP-Master05"
+  tasks:
+    - name: Reiniciar cada máquina virtual en vCenter
+      community.vmware.vmware_guest_powerstate:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        datacenter: "{{ vcenter_datacenter }}"
+        name: "{{ item }}"
+        state: restarted
+        validate_certs: "{{ vcenter_validate_certs }}"
+      loop: "{{ vm_names }}"
+      register: vm_powerstate
+      delegate_to: localhost
+
+    - name: Mostrar resultado del reinicio
+      ansible.builtin.debug:
+        var: vm_powerstate

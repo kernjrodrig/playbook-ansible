@@ -1,0 +1,26 @@
+---
+- name: Ejecutar scripts localmente en orden
+  hosts: localhost       # Ejecutar en el nodo de control (localhost)
+  connection: local      # Usar conexión local, no SSH
+  gather_facts: false    # No necesitamos recopilar hechos para esta tarea simple
+
+  tasks:
+    - name: Ejecutar genera_entorno.sh
+      ansible.builtin.script:
+        cmd: ./genera_entorno.sh  # Ruta relativa al directorio actual
+        executable: /bin/bash     # Especifica el intérprete (bash)
+      register: genera_result     # Registra el resultado para inspección
+
+    - name: Mostrar salida de genera_entorno.sh
+      ansible.builtin.debug:
+        msg: "Salida de genera_entorno.sh: {{ genera_result.stdout_lines }}"
+
+    - name: Ejecutar llaves_entornos.sh
+      ansible.builtin.script:
+        cmd: ./llaves_entornos.sh  # Ruta relativa al directorio actual
+        executable: /bin/bash      # Especifica el intérprete (bash)
+      register: llaves_result      # Registra el resultado para inspección
+
+    - name: Mostrar salida de llaves_entornos.sh
+      ansible.builtin.debug:
+        msg: "Salida de llaves_entornos.sh: {{ llaves_result.stdout_lines }}"

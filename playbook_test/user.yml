@@ -1,0 +1,41 @@
+- hosts: dev
+  vars_files:
+    - /home/ansible/user_list.yml
+    - /home/ansible/locker2.yml
+  tasks:
+    - name: add group
+      ansible.builtin.group:
+        name: devops
+        state: present
+
+    - name: add users who has developer job
+      ansible.builtin.user:
+        name: "{{ item.name }}"
+        groups: devops
+        password: "{{ PW_developer | password_hash('sha512') }}"
+        password_expire_max: 30
+      with_items:
+        - "{{ users }}"
+      when: item.job == 'developer'
+
+- hosts: prod
+  vars_files:
+    - /home/ansible/user_list.yml
+    - /home/ansible/locker.yml
+  tasks:
+    - name: add group
+      ansible.builtin.group:
+        name: sysops
+        state: present
+
+    - name: add users who has developer job
+      ansible.builtin.user:
+        name: "{{ item.name }}"
+        groups: sysops
+        password: "{{ PW_manager | password_hash('sha512') }}"
+      with_items:
+        - "{{ users }}"
+      when: item.job == 'manager'
+
+
+

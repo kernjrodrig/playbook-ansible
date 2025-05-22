@@ -1,0 +1,5 @@
+# vars/exclude_vars.yml
+excluded_packages:
+  - kernel          # No actualizar el kernel
+  - httpd           # No actualizar Apache
+#  - python3         # No actualizar Python 3

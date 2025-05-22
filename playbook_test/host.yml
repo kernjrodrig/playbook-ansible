@@ -1,0 +1,17 @@
+---
+- hosts: dev
+  tasks:
+    - name: copia archivo local al remoto
+      ansible.builtin.template:
+        src: /home/ansible/host.j2
+        dest: /etc/myhosts
+      when: inventory_hostname in groups['dev']
+
+    - name: modificar linea
+      ansible.builtin.lineinfile:
+        path: /etc/myhosts
+        line: '{{hostvars[item].ansible_default_ipv4.address}} {{ hostvars[item].ansible_fqdn}} {{ item }}'
+        state: present
+      with_items: '{{ groups.all }}'
+      when: inventory_hostname in groups['dev']
+

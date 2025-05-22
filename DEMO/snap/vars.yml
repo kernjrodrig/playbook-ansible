@@ -1,0 +1,11 @@
+vcenter_hostname: "192.168.10.15"
+datacenter_name: "Datacenter-Guz"
+vcenter_username: "administrator@vsphere.local"
+vcenter_password: "Temporal123$"
+vcenter_validate_certs: false
+vcenter_cluster: "Guz-Dev"
+vm_names:
+  - "AAP-Master01"
+  - "AAP-Master02"
+  - "AAP-Master03"
+vcenter_destination_folder: "Ansible"

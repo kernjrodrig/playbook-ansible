@@ -1,0 +1,6 @@
+- hosts: all
+  tasks:
+    - name: copy reporte
+      ansible.builtin.template:
+        src: /home/ansible/playbook_test/hwreport.empty
+        dest: /root/hwreporte.txt

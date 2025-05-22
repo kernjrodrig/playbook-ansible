@@ -1,0 +1,39 @@
+---
+- name: Actualizar paquetes en Rocky/RHEL excluyendo aplicaciones específicas
+  hosts: demo
+  become: true
+  vars_files:
+    - vars/exclude_vars.yml
+
+  tasks:
+    - name: Actualizar todos los paquetes excepto los excluidos
+      ansible.builtin.dnf:
+        name: "*"
+        state: latest
+        exclude: "{{ excluded_packages | join(',') }}"
+      register: dnf_result
+
+    - name: Preparar listas de paquetes instalados y eliminados
+      ansible.builtin.set_fact:
+        installed_packages: "{{ dnf_result.results | select('match', '^Installed:') | map('regex_replace', '^Installed: (.*)$', '\\1') | list }}"
+        removed_packages: "{{ dnf_result.results | select('match', '^Removed:') | map('regex_replace', '^Removed: (.*)$', '\\1') | list }}"
+      when: dnf_result.changed
+
+    - name: Mostrar resultado de la actualización en formato de lista
+      ansible.builtin.debug:
+        msg: |
+          Actualización completada:
+          Paquetes instalados:
+          {% for pkg in installed_packages %}
+            - {{ pkg }}
+          {% endfor %}
+          Paquetes eliminados:
+          {% for pkg in removed_packages %}
+            - {{ pkg }}
+          {% endfor %}
+      when: dnf_result.changed
+
+    - name: Mostrar mensaje si no hubo cambios
+      ansible.builtin.debug:
+        msg: "No se realizaron actualizaciones. El sistema ya está al día."
+      when: not dnf_result.changed

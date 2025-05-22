@@ -1,0 +1,3 @@
+vars:
+  satellite_activation_key_pre_leapp: "MY_ACTIVATION_KEY_PRE"
+  satellite_activation_key_leapp: "MY_ACTIVATION_KEY"

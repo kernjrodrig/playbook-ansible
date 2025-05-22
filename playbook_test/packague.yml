@@ -1,0 +1,23 @@
+- name: instalacion de paquetes
+  hosts:
+    - dev
+    - prd
+  tasks:
+    - name: Uninstall httpd but keep its dependencies
+      ansible.builtin.dnf:
+        name: 
+          - php
+          - mariadb-server
+        state: present
+- name:
+  hosts: dev
+  tasks:
+    - name: grupo de instalacion de paquetes
+      ansible.builtin.dnf:
+        name: '@RPM Development Tools'
+        state: present
+
+    - name:  updating all
+      ansible.builtin.dnf:
+        name: '*'
+        state: latest 

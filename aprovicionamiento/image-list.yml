@@ -1,0 +1,32 @@
+---
+- name: Listar imágenes Podman sin contenedores asociados
+  hosts: localhost
+  become: yes
+  tasks:
+    # Obtener la lista de todas las imágenes
+    - name: Obtener todas las imágenes Podman
+      command: "podman images --format '{{ '{{' }}.ID{{ '}}' }} {{ '{{' }}.Repository{{ '}}' }}:{{ '{{' }}.Tag{{ '}}' }}'"
+      register: podman_images_output
+      changed_when: false
+
+    # Obtener los IDs de imágenes usadas por contenedores
+    - name: Obtener imágenes usadas por contenedores
+      command: "podman ps --all --quiet --no-trunc | xargs podman inspect --format '{{ '{{' }}.Image{{ '}}' }}'"
+      register: podman_containers_images
+      changed_when: false
+      ignore_errors: yes
+
+    # Procesar y mostrar imágenes no usadas
+    - name: Identificar y mostrar imágenes sin contenedores
+      debug:
+        msg: "- {{ item.split()[1] }}"
+      loop: "{{ podman_images_output.stdout_lines }}"
+      when: >
+        podman_containers_images.stdout is defined and
+        item.split()[0] not in podman_containers_images.stdout.split()
+      vars:
+        empty_containers_check: "{{ podman_containers_images.stdout | default('') == '' }}"
+      when: >
+        empty_containers_check or
+        (podman_containers_images.stdout is defined and
+         item.split()[0] not in podman_containers_images.stdout.split())

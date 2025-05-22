@@ -1,0 +1,48 @@
+- hosts: new
+  tasks:
+    # Crear grupo de volúmenes y volumen lógico en sdb
+    - name: Crear volume group 'research' en sdb
+      community.general.vgcreate:
+        vg: research
+        pvs: /dev/sdb
+      when: ansible_lvm.vgs.research is not defined
+
+    - name: Crear logical volume 'date' de 300GB
+      community.general.lvol:
+        vg: research
+        lv: date
+        size: 300g
+      when: ansible_lvm.vgs.research is defined
+
+    # Formatear el sistema de archivos
+    - name: Formatear el volumen lógico con ext4
+      community.general.filesystem:
+        fstype: ext4
+        dev: /dev/research/date
+      when: ansible_lvm.vgs.research is defined
+
+    # Crear directorio de montaje
+    - name: Crear directorio /nfs
+      ansible.builtin.file:
+        path: /nfs
+        state: directory
+        mode: '0755'
+      when: ansible_lvm.vgs.research is defined
+
+    # Montar el volumen
+    - name: Montar el volumen en /nfs
+      ansible.builtin.mount:
+        path: /nfs
+        src: /dev/research/date
+        fstype: ext4
+        state: mounted
+        opts: defaults
+        dump: 0
+        passno: 2
+      when: ansible_lvm.vgs.research is defined
+
+    # Mensaje de depuración si el VG no existe
+    - name: Mostrar mensaje si el volume group no existe
+      ansible.builtin.debug:
+        msg: "El volume group 'research' no existe"
+      when: ansible_lvm.vgs.research is not defined

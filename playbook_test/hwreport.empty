@@ -1,0 +1,13 @@
+INVENTORY_HOSTNAME = {{ ansible_hostname }}
+TOTAL_MEMORY = {{ ansible_memtotal_mb }}
+BIOS_VERSION = {{ ansible_bios_version }}
+{% if ansible_devices.sda is defined %}
+SIZE_OF_DISK_SDA = {{ ansible_devices.sda.size }}
+{% else %}
+SIZE_OF_DISK_SDA = NONE
+{% endif %}
+{% if ansible_devices.sdb is defined and ansible_devices.sdb.size is defined %}
+SIZE_OF_DISK_DEVICE_SDB =  {{ ansible_devices.sdb.size }}
+{% else %}
+SIZE_OF_DISK_DEVICE_SDB = NONE
+{% endif %}

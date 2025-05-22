@@ -1,0 +1,12 @@
+---
+- name: Ansible to OpenShift Integration
+  hosts: localhost
+  gather_facts: true
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: Procesar cada cluster
+      ansible.builtin.include_tasks: extract_cert.yml
+      loop: "{{ clusters }}"
+      loop_control:
+        label: "{{ item.name }}"

@@ -1,0 +1,31 @@
+- name: List all snapshots for a VM
+  hosts: localhost
+  become: false
+  gather_facts: false
+  
+  vars_files:
+    - vars.yml
+  
+  tasks:
+    - name: Gather snapshot information for the VM
+      community.vmware.vmware_guest_snapshot_info:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        datacenter: "{{ datacenter_name }}"
+        validate_certs: "{{ vcenter_validate_certs }}"
+        folder: "/Datacenter-Guz/vm/Ansible"  # Folder exacto
+        name: "{{ vm_name }}"
+      delegate_to: localhost
+      register: snapshot_info
+
+    - name: Display all snapshots
+      ansible.builtin.debug:
+        msg: "Snapshot Name: {{ item.name }}, Description: {{ item.description }}, Created: {{ item.create_time }}, State: {{ item.state }}"
+      loop: "{{ snapshot_info.snapshots }}"
+      when: snapshot_info.snapshots is defined and snapshot_info.snapshots | length > 0
+
+    - name: Display message if no snapshots exist
+      ansible.builtin.debug:
+        msg: "No snapshots found for VM {{ vm_name }}"
+      when: snapshot_info.snapshots is not defined or snapshot_info.snapshots | length == 0

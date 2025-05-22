@@ -1,0 +1,13 @@
+---
+- name: Remove Dynatrace OneAgent
+  hosts: all
+  collections:
+    - dynatrace.oneagent
+  vars:
+    oneagent_state: absent
+  tasks:
+    - name: Import OneAgent role to uninstall
+      import_role:
+        name: oneagent
+  environment:
+    ansible_become: true

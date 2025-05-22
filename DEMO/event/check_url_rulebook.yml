@@ -1,0 +1,14 @@
+---
+- name: Check webserver
+  hosts: webservers  
+  sources:
+    - ansible.eda.url_check:
+        urls:
+          - http://192.168.10.51/web-service/
+        delay: 40
+  rules:
+    - name: Restart httpd
+      condition: event.url_check.status == "down"
+      action:
+        run_playbook:
+          name: /home/ansible/DEMO/event/restart_nginx.yml

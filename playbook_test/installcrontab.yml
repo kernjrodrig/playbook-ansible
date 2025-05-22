@@ -1,0 +1,12 @@
+- hosts: all
+  name: install crontab
+  tasks:
+    - name: install paquete
+      ansible.builtin.dnf:
+        name: cronie
+        state: present
+    - name: restar servicio
+      ansible.builtin.service:
+        name: crond.service
+        state: restarted
+

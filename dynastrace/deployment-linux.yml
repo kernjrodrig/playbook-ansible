@@ -1,0 +1,19 @@
+---
+- name: Deploy Dynatrace OneAgent
+  hosts: all
+  collections:
+    - dynatrace.oneagent
+  vars_files:
+    - encrypted_credentials.yml
+  vars:
+    oneagent_download_dir: /tmp/oneagent
+    oneagent_install_args:
+      - --set-host-group=my_host_group
+      - --set-monitoring-mode=full-stack
+    oneagent_version: latest
+  tasks:
+    - name: Import OneAgent role
+      import_role:
+        name: oneagent
+  environment:
+    ansible_become: true

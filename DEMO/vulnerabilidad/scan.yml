@@ -1,0 +1,43 @@
+---
+- name: Escaneo de vulnerabilidades en Red Hat con OpenSCAP
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Asegurarse de que scap-security-guide esté instalado
+      yum:
+        name: scap-security-guide
+        state: present
+
+    - name: Establecer el archivo de datos para RHEL 9
+      set_fact:
+        scap_content_file: "/usr/share/xml/scap/ssg/content/ssg-rhel9-ds.xml"
+
+    - name: Verificar que el archivo de contenido existe
+      stat:
+        path: "{{ scap_content_file }}"
+      register: content_file_check
+      failed_when: not content_file_check.stat.exists
+
+    - name: Ejecutar escaneo de vulnerabilidades con OpenSCAP
+      command: >
+        oscap xccdf eval
+        --profile xccdf_org.ssgproject.content_profile_ospp
+        --results /tmp/ospp-results.xml
+        {{ scap_content_file }}
+      register: oscap_result
+      changed_when: oscap_result.rc in [0, 2]  # rc=0 (éxito), rc=2 (fallos en reglas)
+      failed_when: oscap_result.rc not in [0, 2]
+      when: content_file_check.stat.exists
+
+    - name: Mostrar resultados del escaneo
+      debug:
+        msg: "Escaneo completado. Resultados guardados en /tmp/ospp-results.xml"
+      when: oscap_result.rc in [0, 2]
+
+    - name: Recuperar resultados del escaneo (opcional)
+      fetch:
+        src: /tmp/ospp-results.xml
+        dest: ./ospp-results-{{ inventory_hostname }}.xml
+        flat: yes
+      when: oscap_result.rc in [0, 2]

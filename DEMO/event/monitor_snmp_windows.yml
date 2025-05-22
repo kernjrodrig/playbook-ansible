@@ -1,0 +1,13 @@
+---
+- name: Monitorear servicio SNMP en Windows Server
+  hosts: windows  # Grupo de hosts Windows definido en el inventario
+  sources:
+    - ansible.eda.webhook:
+        host: "192.168.10.11"
+        port: 5000  # Puerto donde el rulebook escucha eventos
+  rules:
+    - name: Reiniciar servicio SNMP
+      condition: event.payload.service_status == "stopped" and event.payload.service_name == "SNMP"
+      action:
+        run_playbook:
+          name: /home/ansible/windows/reinicio_snmp.yml

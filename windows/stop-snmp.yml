@@ -1,0 +1,10 @@
+---
+- name: Gestionar el servicio SNMP en hosts de Windows
+  hosts: windows
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Detener el servicio SNMP
+      win_service:
+        name: SNMP
+        state: stopped

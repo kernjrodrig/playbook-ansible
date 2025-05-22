@@ -1,0 +1,27 @@
+- name: Automatizar partición con parted
+  hosts: all
+  tasks:
+    - name: Verificar si el disco existe
+      ansible.builtin.stat:
+        path: /dev/sda
+      register: disk_stat
+
+    - name: Fallar si el disco no existe
+      ansible.builtin.fail:
+        msg: "El disco /dev/sda no existe"
+      when: not disk_stat.stat.exists
+
+    - name: Crear partición primaria sda4 con tipo LVM
+      ansible.builtin.parted:
+        device: /dev/sda
+        number: 4
+        state: present
+        part_type: primary
+        fs_type: lvm
+        part_start: 1MiB
+        part_end: 100%
+      become: yes
+
+    - name: Actualizar tabla de particiones
+      ansible.builtin.shell: partprobe /dev/sda
+      become: yes

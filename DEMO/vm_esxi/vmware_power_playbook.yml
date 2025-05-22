@@ -1,0 +1,51 @@
+---
+
+    - name: Power ON the virtual machine
+      community.vmware.vmware_guest:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: "{{ vcenter_validate_certs }}"
+        datacenter: "{{ vcenter_datacenter }}"
+        cluster: "{{ vcenter_cluster }}"
+        name: "{{ vm_name }}"
+        state: poweredon
+      when: vm_state == "poweredon"
+      register: power_on_result
+
+    - name: Display power ON result
+      debug:
+        msg: "Virtual Machine {{ vm_name }} has been powered ON successfully"
+      when: power_on_result.changed and vm_state == "poweredon"
+
+    - name: Power OFF the virtual machine
+      community.vmware.vmware_guest:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: "{{ vcenter_validate_certs }}"
+        datacenter: "{{ vcenter_datacenter }}"
+        cluster: "{{ vcenter_cluster }}"
+        name: "{{ vm_name }}"
+        state: poweredoff
+      when: vm_state == "poweredoff"
+      register: power_off_result
+
+    - name: Display power OFF result
+      debug:
+        msg: "Virtual Machine {{ vm_name }} has been powered OFF successfully"
+      when: power_off_result.changed and vm_state == "poweredoff"
+
+    - name: Check VM power state
+      community.vmware.vmware_guest_info:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: "{{ vcenter_validate_certs }}"
+        datacenter: "{{ vcenter_datacenter }}"
+        name: "{{ vm_name }}"
+      register: vm_info
+
+    # - name: Display current VM power state
+    #   debug:
+    #     msg: "Current power state of {{ vm_name }} is {{ vm_info.instance.guest_power_state }}"

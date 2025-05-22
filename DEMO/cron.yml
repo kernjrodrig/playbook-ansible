@@ -1,0 +1,10 @@
+---
+- name: Reiniciar servicio cron en Rocky Linux
+  hosts: rhel9_hosts
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: Reiniciar el servicio cron
+      systemd:
+        name: crond
+        state: restarted

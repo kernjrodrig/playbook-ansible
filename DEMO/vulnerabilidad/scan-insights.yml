@@ -1,0 +1,28 @@
+---
+- name: Consultar vulnerabilidades de servidores RHEL desde Insights API
+  hosts: all  # Grupo de servidores en tu inventario
+  gather_facts: false  # No necesitamos hechos del sistema para esta consulta
+  vars:
+    insights_api_token: "eyJhbGciOiJIUzUxMiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI0NzQzYTkzMC03YmJiLTRkZGQtOTgzMS00ODcxNGRlZDc0YjUifQ.eyJpYXQiOjE3NDIyMzA1NTUsImp0aSI6IjlmYjQzNjAxLTQxZGUtNGJiMi05ODM3LTg5ZjI4OTI2NzJkOCIsImlzcyI6Imh0dHBzOi8vc3NvLnJlZGhhdC5jb20vYXV0aC9yZWFsbXMvcmVkaGF0LWV4dGVybmFsIiwiYXVkIjoiaHR0cHM6Ly9zc28ucmVkaGF0LmNvbS9hdXRoL3JlYWxtcy9yZWRoYXQtZXh0ZXJuYWwiLCJzdWIiOiJmOjUyOGQ3NmZmLWY3MDgtNDNlZC04Y2Q1LWZlMTZmNGZlMGNlNjpramF2aWVyX3JvZHJpZ3VleiIsInR5cCI6Ik9mZmxpbmUiLCJhenAiOiJyaHNtLWFwaSIsInNpZCI6ImY3YjY3YmVkLWUwMDYtNDkxZi1iYWZjLTA2OGZhMWNiZGI5MyIsInNjb3BlIjoiYmFzaWMgcm9sZXMgd2ViLW9yaWdpbnMgY2xpZW50X3R5cGUucHJlX2tjMjUgb2ZmbGluZV9hY2Nlc3MifQ.IPw76y21WoPxbs_03-UFVsdYrGaDnZWM8sq1OsXBChP11dWEsif8hZmNxX_GgKWH8i5Kll8Powpl90wooGtzog"
+
+  tasks:
+    - name: Consultar vulnerabilidades desde la API de Insights
+      ansible.builtin.uri:
+        url: "https://console.redhat.com/api/insights/v1/system/{{ inventory_hostname }}/cves"
+        method: GET
+        headers:
+          Authorization: "Bearer {{ insights_api_token }}"
+        return_content: true
+        validate_certs: true  # Verifica el certificado SSL (ajústalo si usas un proxy)
+      register: cve_data
+      ignore_errors: true  # Continúa si hay errores (por ejemplo, sistema no registrado)
+
+    - name: Mostrar CVEs detectados
+      ansible.builtin.debug:
+        msg: "CVEs encontrados en {{ inventory_hostname }}: {{ cve_data.json.data | map(attribute='cve') | join(', ') }}"
+      when: cve_data.status == 200 and cve_data.json.data is defined
+
+    - name: Mostrar mensaje si no hay datos
+      ansible.builtin.debug:
+        msg: "No se encontraron vulnerabilidades o el sistema no está registrado en Insights para {{ inventory_hostname }}"
+      when: cve_data.status != 200 or cve_data.json.data is not defined

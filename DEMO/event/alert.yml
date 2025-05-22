@@ -1,0 +1,10 @@
+groups:
+- name: selinux status
+  rules:
+  - alert: selinux disabled
+    expr: nginx_up{job="nginx-prometheus-exporter"} == 0
+    for: 20s
+    labels:
+      severity: page
+    annotations:
+      summary: "selinx disabled"

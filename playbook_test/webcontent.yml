@@ -1,0 +1,26 @@
+- hosts: dev
+  tasks:
+    - name: Ensure group "webdev" exists
+      ansible.builtin.group:
+        name: webdev
+        state: present
+
+    - name: Change file ownership, group and permissions
+      ansible.builtin.file:
+        name: /webdev
+        group: webdev
+        owner: root
+        mode: '02775'
+        state: directory 
+        setype: httpd_sys_content_t
+
+    - name: crear link simbolico
+      ansible.builtin.file:
+        src: /webdev
+        dest: /var/www/html/webdev
+        state: link
+   
+    - name: copia de archivo
+      ansible.builtin.copy:
+        content: development
+        dest: /var/www/html/webdev/index.html 

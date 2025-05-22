@@ -1,0 +1,35 @@
+---
+- name: Instalar y configurar nginx
+  hosts: all  # Cambia esto al grupo o hosts que desees
+  become: yes        # Necesario para instalar paquetes y gestionar servicios
+  tasks:
+    - name: Instalar nginx en sistemas basados en yum (Red Hat/CentOS)
+      ansible.builtin.yum:
+        name: nginx
+        state: present
+      when: ansible_pkg_mgr == "yum"  # Solo se ejecuta en sistemas con yum
+
+    - name: Instalar nginx en sistemas basados en apt (Debian/Ubuntu)
+      ansible.builtin.apt:
+        name: nginx
+        state: present
+        update_cache: yes  # Actualiza la caché de paquetes antes de instalar
+      when: ansible_pkg_mgr == "apt"  # Solo se ejecuta en sistemas con apt
+
+    - name: Asegurar que nginx esté iniciado y habilitado
+      ansible.builtin.systemd:
+        name: nginx
+        state: started
+        enabled: yes  # Habilita nginx para que inicie al arrancar
+      register: nginx_status
+
+    - name: Verificar el estado de nginx
+      ansible.builtin.systemd:
+        name: nginx
+        state: started
+      register: status_result
+      changed_when: false
+
+    - name: Mostrar resultado de la instalación y estado
+      ansible.builtin.debug:
+        msg: "Nginx instalado y corriendo. Estado actual: {{ status_result.status.ActiveState }}"

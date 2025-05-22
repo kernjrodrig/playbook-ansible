@@ -1,0 +1,31 @@
+- hosts: dev
+  tasks:
+    - block:
+        - block:
+            - community.general.lvol:
+                vg: research
+                lv: date
+                size: 1500m
+          when: ansible_lvm.vgs.research.size_g > '1500MiB'
+
+        - block:
+            - ansible.builtin.debug:
+                msg: " clould not create logical volumen of that size "
+            - community.general.lvol:
+                 vg: research
+                 lv: date
+                 size: 800m
+          when: ansible_lvm.vgs.research.size_g > '1500MiB'
+      when: ansible_lvm.vhs.research is defined
+
+    - name: Formt filsesystem
+      community.general.filesystem:
+        fstype: ext4
+        dev: /dev/research/data
+      when: ansible_lvm.vgs.research is defined
+
+
+    - ansible.builtin.debug:
+         msg: "volume gruop does not exist"
+      when: ansible_lvm.vgs.research is not defined 
+

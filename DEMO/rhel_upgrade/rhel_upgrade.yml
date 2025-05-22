@@ -1,0 +1,32 @@
+- name: Upgrade
+  hosts: rhel8_servers
+  strategy: free
+  become: true
+  force_handlers: true
+  vars:
+    leapp_upgrade_opts: --target 9.4
+    update_grub_to_grub_2: true
+    selinux_mode: permissive
+  tasks:
+    - name: Ensure Leapp is installed
+      ansible.builtin.dnf:
+        name: leapp-upgrade
+        state: present
+
+    - name: Run Leapp preupgrade check
+      ansible.builtin.command:
+        cmd: leapp preupgrade
+      register: preupgrade_result
+      changed_when: false
+
+    - name: Run Leapp upgrade
+      ansible.builtin.command:
+        cmd: leapp upgrade {{ leapp_upgrade_opts }}
+      when: preupgrade_result.rc == 0
+      register: upgrade_result
+      changed_when: true
+
+    - name: Reboot after upgrade
+      ansible.builtin.reboot:
+        reboot_timeout: 3600
+      when: upgrade_result.rc == 0

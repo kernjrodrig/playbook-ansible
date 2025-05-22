@@ -1,0 +1,10 @@
+- name: Desfragmentador de memoria
+  hosts: aap
+  tasks:
+    - name: Se limpia
+      ansible.builtin.shell:
+        cmd: free -g ; sync && sysctl -w vm.drop_caches=3 ; free -g
+    
+    - name: Display output
+      debug:
+        var: ansible_memory_mb 

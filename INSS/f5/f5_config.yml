@@ -1,0 +1,55 @@
+---
+- name: Playbook para respaldo y recuperación de configuración en F5 BIG-IP
+  hosts: bigip_devices
+  collections:
+    - f5networks.f5_bigip
+  vars:
+    provider:
+      server: "{{ ansible_host }}"
+      user: "{{ ansible_user }}"
+      password: "{{ ansible_password }}"
+      validate_certs: no
+      server_port: 443
+
+  tasks:
+    - name: Guardar la configuración actual en el dispositivo
+      bigip_config:
+        provider: "{{ provider }}"
+        save: yes
+      register: save_result
+      delegate_to: localhost
+
+    - name: Crear un backup de la configuración en formato UCS
+      bigip_config:
+        provider: "{{ provider }}"
+        backup: yes
+        backup_file: "/var/tmp/backup_{{ inventory_hostname }}_{{ ansible_date_time.iso8601_basic_short }}.ucs"
+      register: backup_result
+      delegate_to: localhost
+
+    - name: Descargar el backup al equipo local
+      bigip_ucs_fetch:
+        provider: "{{ provider }}"
+        src: "{{ backup_result.backup_file }}"
+        dest: "./backups/backup_{{ inventory_hostname }}_{{ ansible_date_time.iso8601_basic_short }}.ucs"
+      delegate_to: localhost
+
+    - name: Restaurar configuración desde backup (opcional, descomentar si es necesario)
+      bigip_config:
+        provider: "{{ provider }}"
+        reset: no
+        merge_content: no
+        configsrc: "{{ backup_result.backup_file }}"
+      when: false  # Cambiar a 'true' o eliminar esta línea para ejecutar la restauración
+      delegate_to: localhost
+
+    - name: Verificar que la configuración se haya guardado correctamente
+      bigip_command:
+        provider: "{{ provider }}"
+        commands: "tmsh show sys config-save"
+      register: verify_result
+      delegate_to: localhost
+
+    - name: Mostrar resultado de la verificación
+      debug:
+        msg: "Resultado de la verificación: {{ verify_result.stdout_lines }}"

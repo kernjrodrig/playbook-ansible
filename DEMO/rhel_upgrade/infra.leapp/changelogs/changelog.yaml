@@ -1,0 +1,153 @@
+ancestor: null
+releases:
+  1.1.1:
+    changes:
+      minor_changes:
+      - Added os_path variable
+    fragments:
+    - os_path.yml
+    release_date: '2023-08-29'
+  1.1.2:
+    changes:
+      bugfixes:
+      - Fixed shell tasks to use the correct variable "os_path"
+    fragments:
+    - os_path_update.yaml
+    release_date: '2023-08-29'
+  1.1.3:
+    changes:
+      bugfixes:
+      - Fixed common role to resolve incorrect timestamps in log files
+      - Fixed os_path is undefined error in upgrade role
+      minor_changes:
+      - Add the default variables async_timeout_maximum and async_poll_interval which
+        configure the timeout and polling values respectively for asynchronous task
+        execution. - Setting async/poll values as default vars will allow override
+        timer values based on the end user's particular needs.
+      - Set the default to "disabled" in the selinux_mode default variable - This
+        resolves an issue with a missing Ansible fact for servers where selinux is
+        disabled
+    fragments:
+    - async-timer-vars.yml
+    - fix_log_timestamps.yml
+    - fix_os_path.yml
+    - selinux_variable_fix.yml
+    release_date: '2023-09-26'
+  1.1.4:
+    changes:
+      bugfixes:
+      - switched template to jinja vars for version upgrade verification
+    fragments:
+    - jinja_vars.yml
+    release_date: '2024-01-10'
+  1.2.0:
+    changes:
+      bugfixes:
+      - Remove obsolete versions from CI workflow and add newer ones
+      major_changes:
+      - Add capturing of high (error) findings in analysis and upgrade.
+      - Add remediation role to remediate the system based on available remediation
+        playbooks.
+      - Add support for using custom repositories for Leapp upgrades (leapp_upgrade_type
+        == "custom").
+      - Improve reporting of inhibitors and high (error) findings
+      - added a boolean to allow users to skip RHSM unlock after leapp upgrade
+      - added a boolean to allow users to skip the dnf update after the upgrade has
+        completed
+      - added a string to allow users to lock RHSM to a specified release after leapp
+        upgrade
+      minor_changes:
+      - Add option to unload kernel modules prior to running leapp upgrade (kernel_modules_to_unload_before_upgrade).
+      - Add variable check_leapp_analysis_results which if set to false (true by default)
+        allows to not check previous leapp analysis json results for inhibitors.
+      - Add variable for setting ansible_python_interpretor for RHEL 7 to 8 upgrades
+        post upgrade post_7_to_8_python_interpreter.
+      - Capture leapp_inhibitors via set_stats for job artifacts.
+      - Fix analysis handler for Satellite registration (add conditional for if pre_leapp
+        key is defined).
+      - For RHEL 6 upgrades, similarly capture inhibitor and high errors for not enough
+        space for display in output and inclusion into set_stats for leapp_inhibitors.
+      - Variabilize reboot_timeout and upgrade_timeout.
+    fragments:
+    - add_remediation__role.yml
+    - add_support_for_custom_repos.yml
+    - check_leapp_analysis_results_optional.yml
+    - fix_ci_workflow.yml
+    - fix_sat_reg_handler_pre_leapp.yml
+    - improve_error_reporting.yml
+    - kernel_modules_unload.yml
+    - post_7_to_8_python_interpreter.yml
+    - post_upgrade_release_lock.yml
+    - post_upgrade_update.yml
+    - preupg_get_inhibitors.yml
+    - reboot_and_upgrade_timeoutes.yml
+    - set_stats_leapp_inhibitors.yml
+    release_date: '2024-05-02'
+  1.3.0:
+    changes:
+      major_changes:
+      - Move collection dependencies from galaxy.yml to requirements.yml
+      minor_changes:
+      - Add infra_leapp_upgrade_system_roles_collection variable for specifying fedora.linux_system_roles
+        or redhat.rhel_system_roles
+      - Allow listing known inhibitors for which remediations are available
+    fragments:
+    - allow_listing_known_inhibitors.yml
+    - soften_linux_system_roles_dependency.yml
+    release_date: '2024-05-23'
+  1.3.1:
+    changes:
+      bugfixes:
+      - Correct /var/log/leapp mode to 0700
+      - Fix regressions impacting upgrade role
+      minor_changes:
+      - Allow treating all high severity findings as inhibitors
+      - Do not try to read analysis report when check_leapp_analysis_results is false.
+      - Fix check-inodes.sh script introduced error.
+      - Move fact capture from analysis to ensure that facts are representative of
+        the system immediately before upgrade.
+    fragments:
+    - allow_treating_high_sev_as_inhibitors.yml
+    - fix_check_inodes.yml
+    - fix_check_leapp_analysis_results.yml
+    - fix_mode.yml
+    - fix_upgrade.yml
+    - move_fact_capture_to_common.yml
+    release_date: '2024-07-16'
+  1.4.0:
+    changes:
+      bugfixes:
+      - Run leapp with increased per-process file descriptor limit
+      major_changes:
+      - Change Leapp report schema from default (1.0.0) to new 1.2.0 for analysis
+        and upgrade.
+      minor_changes:
+      - Added variables to the leapp_resume task to control task retries and delays.
+    fragments:
+    - add_leapp_resume_variables.yml
+    - fix_ulimit.yml
+    - use_new_report_schema.yml
+    release_date: '2024-08-28'
+  1.4.1:
+    changes:
+      minor_changes:
+      - Add leapp_env_vars optional variable for defining leapp environment variables
+      - Add option to skip the initial update and reboot of the pre-upgraded server
+      - Add optional parameter for allowing caching of facts within AAP
+      - Consolidate analysis and upgrade custom-local-repos.yml task files to infra.leapp.common
+        custom_local_repos.yml.
+      - Ensure leapp_upgrade_repositories.repo only has content from the current run
+        of local_repos_leapp variable.
+      - Fix minor documentation typo for /etc/yum.repos.d
+      - Support optional gpgkey and repo_gpgcheck yum repository attributes
+      - Update example playbooks and variables from 8.8 to 8.10.
+      - Use infra.leapp.common custom_local_repos.yml to generate all repository files.
+    fragments:
+    - add_cachable_variable.yml
+    - custom_local_repos.yml
+    - documentation-yum-repos-d.yml
+    - leapp_env_vars.yml
+    - option_to_skip_pre_upgrade_update_boot.yml
+    - support_gpgkey_and_repo_gpgcheck.yml
+    - update_8_8_to_8_10.yml
+    release_date: '2024-11-14'

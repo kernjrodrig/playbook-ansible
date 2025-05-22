@@ -1,0 +1,35 @@
+---
+- name: Subscribir máquina RHEL 9 con clave de activación
+  hosts: new
+  become: yes  # Necesitamos privilegios de root
+  vars:
+    rhsm_org: "18091326"           # ID de la organización
+    rhsm_activation_key: "RedHatGuzdan"  # Clave de activación
+
+  tasks:
+    - name: Registrar el sistema con clave de activación
+      ansible.builtin.command:
+        cmd: subscription-manager register --org={{ rhsm_org }} --activationkey={{ rhsm_activation_key }} --force
+        creates: /etc/rhsm/facts/subscription_manager.facts
+      register: register_result
+      changed_when: register_result.rc == 0
+
+    - name: Habilitar repositorios principales de RHEL 9
+      ansible.builtin.command:
+        cmd: subscription-manager repos --enable=rhel-9-for-x86_64-baseos-rpms --enable=rhel-9-for-x86_64-appstream-rpms
+      when: register_result.rc == 0
+
+    - name: Actualizar cache de yum
+      ansible.builtin.dnf:
+        update_cache: yes
+      when: register_result.rc == 0
+
+    - name: Verificar estado de la suscripción
+      ansible.builtin.command:
+        cmd: subscription-manager status
+      register: status_result
+      changed_when: false
+
+    - name: Mostrar estado de la suscripción
+      ansible.builtin.debug:
+        msg: "{{ status_result.stdout_lines }}"

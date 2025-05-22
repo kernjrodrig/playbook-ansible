@@ -1,0 +1,40 @@
+---
+- name: Depuración de logs en RHEL 9
+  hosts: rhel9_hosts
+  become: yes
+  tasks:
+    - name: Verificar el estado del servicio journal
+      systemd:
+        name: systemd-journald
+        state: started
+        enabled: yes
+
+    - name: Rotar y comprimir logs
+      command: journalctl --vacuum-time=3d
+      # Este comando elimina todos los logs que tienen más de 3 días.
+
+    - name: Mostrar los últimos 500 mensajes de log
+      shell: journalctl -n 500
+      register: log_output
+
+    - name: Mostrar resultado
+      debug:
+        var: log_output.stdout_lines
+
+    - name: Guardar logs en un archivo
+      copy:
+        content: "{{ log_output.stdout }}"
+        dest: "/tmp/recent_logs_{{ inventory_hostname }}.txt"
+
+    - name: Configurar rsyslog para depuración (opcional)
+      lineinfile:
+        path: /etc/rsyslog.conf
+        line: "*.debug     /var/log/syslog_debug"
+        state: present
+      notify: Reiniciar rsyslog
+
+  handlers:
+    - name: Reiniciar rsyslog
+      systemd:
+        name: rsyslog
+        state: restarted

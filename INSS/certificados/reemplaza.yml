@@ -1,0 +1,99 @@
+---
+# Paso 1: Crear el secreto TLS con los certificados
+- name: Crear secreto TLS para el certificado de ingreso
+  kubernetes.core.k8s:
+    host: "{{ cluster.api_url }}"
+    api_key: "{{ cluster.token }}"
+    state: present
+    validate_certs: false
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: "{{ cluster.secret_name }}"
+        namespace: "{{ cluster.namespace_ingress }}"
+      type: kubernetes.io/tls
+      data:
+        tls.crt: "{{ lookup('file', cluster.cert_file_new) | b64encode }}"
+        tls.key: "{{ lookup('file', cluster.key_file_new) | b64encode }}"
+  register: secret_result
+
+# Paso 2: Validar que el secreto se creó correctamente
+- name: Verificar existencia del secreto
+  kubernetes.core.k8s_info:
+    kind: Secret
+    name: "{{ cluster.secret_name }}"
+    namespace: "{{ cluster.namespace_ingress }}"
+    host: "{{ cluster.api_url }}"
+    api_key: "{{ cluster.token }}"
+    validate_certs: false
+  register: secret_check
+  failed_when: secret_check.resources | length == 0
+
+- name: Mostrar resultado de la verificación del secreto
+  ansible.builtin.debug:
+    msg: "Secreto {{ cluster.secret_name }} creado exitosamente en {{ cluster.namespace_ingress }}"
+
+# Paso 3: Hacer un respaldo del Ingress Controller
+- name: Obtener información del Ingress Controller
+  kubernetes.core.k8s_info:
+    kind: IngressController
+    api_version: operator.openshift.io/v1
+    name: "{{ cluster.ingress_controller_name | default('default') }}"
+    namespace: "{{ cluster.namespace_ingress | default('openshift-ingress-operator') }}"
+    host: "{{ cluster.api_url }}"
+    api_key: "{{ cluster.token }}"
+    validate_certs: false
+  register: ingress_controller_info
+
+##
+## # Descomentar para guardar el respaldo en un archivo - pero esta dando errores 
+# - name: Guardar respaldo del Ingress Controller en un archivo
+#   ansible.builtin.copy:
+#     content: "{{ ingress_controller_info.resources[0] | to_nice_yaml }}"
+#     dest: "{{ cluster.backup_file | default('ingresscontroller-backup.yaml') }}"
+#     mode: '0644'
+
+# - name: Confirmar respaldo creado
+#   ansible.builtin.debug:
+#     msg: "Respaldo del Ingress Controller guardado en {{ cluster.backup_file | default('ingresscontroller-backup.yaml') }}"
+
+# Paso 4: Actualizar el Ingress Controller con el nuevo secreto
+- name: Actualizar Ingress Controller con el certificado
+  kubernetes.core.k8s:
+    state: present
+    kind: IngressController
+    api_version: operator.openshift.io/v1
+    name: "{{ cluster.ingress_controller_name | default('default') }}"
+    namespace: "{{ cluster.namespace_ingress | default('openshift-ingress-operator') }}"
+    host: "{{ cluster.api_url }}"
+    api_key: "{{ cluster.token }}"
+    validate_certs: false
+    definition:
+      spec:
+        defaultCertificate:
+          name: "{{ cluster.secret_name }}"
+  register: ingress_update_result
+
+- name: Mostrar resultado de la actualización
+  ansible.builtin.debug:
+    msg: "Ingress Controller {{ cluster.ingress_controller_name | default('default') }} actualizado con el secreto {{ cluster.secret_name }}"
+
+# Paso 5: Obtener el dominio del clúster para verificación
+- name: Obtener información del recurso ingresses.config/cluster
+  kubernetes.core.k8s_info:
+    api_version: config.openshift.io/v1
+    kind: Ingress
+    name: cluster
+    host: "{{ cluster.api_url }}"
+    api_key: "{{ cluster.token }}"
+    validate_certs: false
+  register: ingress_config_info
+
+- name: Guardar dominio en una variable
+  ansible.builtin.set_fact:
+    cluster_domain_name: "{{ ingress_config_info.resources[0].spec.domain }}"
+
+- name: Mostrar dominio del clúster
+  ansible.builtin.debug:
+    msg: "Dominio del clúster: {{ cluster_domain_name }}"

@@ -1,0 +1,19 @@
+---
+- name: Ver nombre y estado de todos los servicios en Windows
+  hosts: windows
+  become: yes
+  become_method: runas
+  become_user: Administrator
+  vars:
+    ansible_become_password: "{{ ansible_password }}"
+  tasks:
+    - name: Obtener información de todos los servicios
+      ansible.windows.win_service_info:
+      register: service_info
+
+    - name: Mostrar nombre y estado de los servicios
+      debug:
+        msg: "{{ item.name }} - {{ item.state }}"
+      loop: "{{ service_info.services }}"
+      loop_control:
+        label: "{{ item.name }}"  # Muestra solo el nombre en la iteración

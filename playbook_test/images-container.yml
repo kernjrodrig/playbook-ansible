@@ -1,0 +1,15 @@
+---
+- name: Eliminar imagenes de contenedores que no estan en uso
+  hosts: localhost
+  tasks:
+    - name: Buscar imagenes de contenedores
+      ansible.builtin.shell: podman images | awk '{print $1 ":" $2}'
+      register: output
+    - name: Seleccionar imagenes de contenedores no en uso
+      ansible.builtin.set_fact:
+        containers_to_remove: "{{ output.stdout_lines | difference(['registry.access.redhat.com/ubi8/ubi','docker.io/library/centos','quay.io/bitnami/wildfly','registry.access.redhat.com/redhat-sso-7/sso70-openshift','registry.access.redhat.com/redhat-sso-7/sso71-openshift','registry.access.redhat.com/redhat-sso-7/sso72-openshift'])
+          }}"
+    - name: Eliminar contenedores
+      ansible.builtin.shell: podman rmi {{ item }}
+      loop: "{{ containers_to_remove |flatten(levels=1) }}"
+

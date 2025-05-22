@@ -1,0 +1,151 @@
+# create dynatrace management zone with host group value
+# host_name -> target host to execute playbook
+# dt_config_api_endpoint -> dynatrace configuration api endpoint (include trailing /)
+# dt_api_token -> dynatrace api token with read & write access
+# dt_mz_name -> name of assign dynatrace management zone
+# dt_mz_64id -> unique 64 bit integer id to assign dynatrace management zone
+# dt_host_group -> name of existing host group to apply to rules
+---
+-
+  hosts: "{{ host_name }}"
+  name: "create dynatrace management zone with host group value"
+  tasks:
+    -
+      name: "generate management zone 64 bit id"
+      set_fact:
+        dt_mz_64id: "{{ 999999999999999999 | random(100000000000000000, 10) }}"
+      when: dt_mz_64id is undefined
+    -
+      name: "validate management zone 64 bit id is available"
+      uri:
+        url: "{{ dt_config_api_endpoint }}managementZones?Api-Token={{ dt_api_token }}"
+        method: GET
+        return_content: yes
+        status_code: 200
+      register: existing_mz
+      failed_when: 'dt_mz_64id|string in existing_mz.content'
+    -
+      name: "validate management zone payload"
+      uri:
+        url: "{{ dt_config_api_endpoint }}managementZones/validator?Api-Token={{ dt_api_token }}"
+        method: POST
+        body:
+          name: "{{ dt_mz_name }}"
+          rules:
+          - type: SERVICE
+            enabled: true
+            propagationTypes: []
+            conditions:
+            - key:
+                attribute: HOST_GROUP_NAME
+              comparisonInfo:
+                type: STRING
+                operator: EQUALS
+                value: "{{ dt_host_group }}"
+                negate: false
+                caseSensitive: false
+          - type: PROCESS_GROUP
+            enabled: true
+            propagationTypes: []
+            conditions:
+            - key:
+                attribute: HOST_GROUP_NAME
+              comparisonInfo:
+                type: STRING
+                operator: EQUALS
+                value: "{{ dt_host_group }}"
+                negate: false
+                caseSensitive: false
+          - type: HOST
+            enabled: true
+            propagationTypes: []
+            conditions:
+            - key:
+                attribute: HOST_GROUP_NAME
+              comparisonInfo:
+                type: STRING
+                operator: EQUALS
+                value: "{{ dt_host_group }}"
+                negate: false
+                caseSensitive: false
+          - type: WEB_APPLICATION
+            enabled: true
+            propagationTypes: []
+            conditions:
+            - key:
+                attribute: WEB_APPLICATION_NAME
+              comparisonInfo:
+                type: STRING
+                operator: EQUALS
+                value: "{{ dt_host_group }}"
+                negate: false
+                caseSensitive: false
+        body_format: json
+        status_code: 204
+        return_content: yes
+      register: new_mz
+    -
+      name: "create management zone"
+      uri:
+        url: "{{ dt_config_api_endpoint }}managementZones/{{ dt_mz_64id }}?Api-Token={{ dt_api_token }}"
+        method: PUT
+        body:
+          id: "{{ dt_mz_64id }}"
+          name: "{{ dt_mz_name }}"
+          rules:
+          - type: SERVICE
+            enabled: true
+            propagationTypes: []
+            conditions:
+            - key:
+                attribute: HOST_GROUP_NAME
+              comparisonInfo:
+                type: STRING
+                operator: EQUALS
+                value: "{{ dt_host_group }}"
+                negate: false
+                caseSensitive: false
+          - type: PROCESS_GROUP
+            enabled: true
+            propagationTypes: []
+            conditions:
+            - key:
+                attribute: HOST_GROUP_NAME
+              comparisonInfo:
+                type: STRING
+                operator: EQUALS
+                value: "{{ dt_host_group }}"
+                negate: false
+                caseSensitive: false
+          - type: HOST
+            enabled: true
+            propagationTypes: []
+            conditions:
+            - key:
+                attribute: HOST_GROUP_NAME
+              comparisonInfo:
+                type: STRING
+                operator: EQUALS
+                value: "{{ dt_host_group }}"
+                negate: false
+                caseSensitive: false
+          - type: WEB_APPLICATION
+            enabled: true
+            propagationTypes: []
+            conditions:
+            - key:
+                attribute: WEB_APPLICATION_NAME
+              comparisonInfo:
+                type: STRING
+                operator: EQUALS
+                value: "{{ dt_host_group }}"
+                negate: false
+                caseSensitive: false
+        body_format: json
+        status_code: 201
+        return_content: yes
+      register: new_mz
+    -
+      name: "output management zone id"
+      debug:
+        msg: "{{ dt_mz_64id }}"

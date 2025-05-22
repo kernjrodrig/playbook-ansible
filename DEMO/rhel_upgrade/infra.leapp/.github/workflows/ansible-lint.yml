@@ -1,0 +1,30 @@
+---
+name: Yaml and Ansible Lint
+on: [push, pull_request, workflow_call]  # yamllint disable-line rule:truthy
+jobs:
+  build:
+    name: Ansible Lint # Naming the build is important to use it as a status check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build collection
+        run: ansible-galaxy collection build -vvv
+        shell: bash
+        working-directory: ${{ vars.GITHUB_PATH }}
+
+      - name: Get version
+        run: echo "NUM=$(cat galaxy.yml | grep version | cut -d ':' -f 2 | awk '{print $1}')" >> $GITHUB_OUTPUT
+        id: vers
+
+      - name: Install collection
+        run: ansible-galaxy collection install ./infra-leapp-${{ steps.vers.outputs.NUM }}.tar.gz # -p /home/runner/collections
+        shell: bash
+        working-directory: ${{ vars.GITHUB_PATH }}
+
+      - name: Install collection dependencies
+        run: ansible-galaxy collection install -r requirements.yml
+
+      - name: Run ansible-lint
+        uses: ansible/ansible-lint@main # or version tag instead of 'main'
+...

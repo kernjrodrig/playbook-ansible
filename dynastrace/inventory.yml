@@ -1,0 +1,7 @@
+---
+all:
+  hosts:
+    linux_other:
+      ansible_host: ['192.168.10.73', '192.168.10.73', '192.168.10.73'] 
+  vars:
+    oneagent_installer_arch: x86  # Arquitectura para linux_other

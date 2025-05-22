@@ -1,0 +1,9 @@
+- name: Configuración de SELinux
+  hosts: all
+  vars:
+    selinux_policy: targeted
+    selinux_state: enforcing
+
+  roles:
+    - role: rhel-system-roles.selinux
+      become: true

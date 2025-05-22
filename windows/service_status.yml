@@ -1,0 +1,16 @@
+---
+- name: Ver el estado de los servicios en Windows
+  hosts: windows
+  become: yes
+  become_method: runas  # Método correcto para Windows
+  become_user: Administrator  # Usuario con privilegios elevados
+  vars:
+    ansible_become_password: "{{ ansible_password }}"  # Contraseña del usuario
+  tasks:
+    - name: Obtener información de todos los servicios
+      ansible.windows.win_service_info:
+      register: service_info
+
+    - name: Mostrar el resultado
+      debug:
+        var: service_info

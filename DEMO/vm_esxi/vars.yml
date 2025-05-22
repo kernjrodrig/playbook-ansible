@@ -1,0 +1,28 @@
+vcenter_hostname: "192.168.10.15"
+vcenter_datacenter: "Datacenter-Guz"
+vcenter_username: "administrator@vsphere.local"
+vcenter_password: "Temporal123$"
+vcenter_validate_certs: false
+vcenter_cluster: "Guz-Dev"
+vm_name: "slave07"   ##### Nombre de la VM
+vm_guestid: "rhel9_64Guest"
+vm_disk_gb: 100              # Disco principal (SO)
+vm_disk_type: "thin"
+vm_disk_datastore: "Disk-iSCSI"
+# vm_hw_ram_mb: 32768
+vm_hw_ram_mb: 4096
+vm_hw_cpu_n: 4
+vm_hw_scsi: "paravirtual"
+vm_net_name: "VM Network"
+vm_net_type: "vmxnet3"
+vm_ip: "192.168.10.76"
+vm_net_mask: "255.255.255.128"
+vm_net_gw: "192.168.10.1"
+vm_net_dns: "8.8.8.8"
+vcenter_destination_folder: "Ansible"
+vm_state: "poweredon"
+vm_template: "slave02"
+# Nuevas variables para el segundo disco
+#vm_disk2_gb: 300            # Tamaño del segundo disco
+#vm_disk2_type: "thin"       # Tipo del segundo disco
+#vm_disk2_datastore: "Disk-iSCSI"  # Datastore del segundo disco (puede ser diferente si lo deseas)

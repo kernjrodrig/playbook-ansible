@@ -1,0 +1,109 @@
+# clone existing dynatrace dashboard (template)
+# host_name -> target host to execute playbook
+# dt_config_api_endpoint -> dynatrace configuration api endpoint (include trailing /)
+# dt_api_token -> dynatrace api token with read & write access
+# dt_dashboard_name -> name to assign dynatrace dashboard
+# dt_dashboard_uuid -> unique UUID id to assign dynatrace dashboard
+# dt_clone_uuid -> unique UUID id of the dynatrace dashboard to clone
+# dt_mz_64id -> unique 64 bit integer id of dynatrace management zone
+# dt_mz_name -> name of dynatrace management zone
+# dt_web_application_id -> unique id of the dynatrace web application (for application tiles)
+# dt_owner_id -> user account to assign dashboard ownership
+# smtp_host -> mail server smtp hosts
+# smtp_port -> mail server smtp smtp
+# smtp_username -> mail server username
+# smtp_password -> mail server password
+# dt_email_receiver -> email recipient address
+# dt_base_url -> dynatrace environment/tenant base url
+---
+-
+  hosts: "{{ host_name }}"
+  name: "clone existing dynatrace dashboard (template)"
+  tasks:
+    -
+      name: "generate dashboard uuid"
+      set_fact:
+        dt_dashboard_uuid: "{{ 9999999999999999999999 | random | to_uuid }}"
+      when: dt_dashboard_uuid is undefined
+    -
+      name: "validate dashboard uuid is available"
+      uri:
+        url: "{{ dt_config_api_endpoint }}dashboards?Api-Token={{ dt_api_token }}"
+        method: GET
+        return_content: yes
+        status_code: 200
+      register: existing_dashboards
+      failed_when: 'dt_dashboard_uuid|string in existing_dashboards.content'
+    -
+      name: "validate dashboard to clone UUID exists"
+      uri:
+        url: "{{ dt_config_api_endpoint }}dashboards?Api-Token={{ dt_api_token }}"
+        method: GET
+        return_content: yes
+        status_code: 200
+      register: existing_dashboards
+      failed_when: 'dt_clone_uuid|string not in existing_dashboards.content'
+    -
+      name: "download dashboard to clone json"
+      get_url:
+        url: "{{ dt_config_api_endpoint }}dashboards/{{ dt_clone_uuid }}?Api-Token={{ dt_api_token }}"
+        dest: /tmp/dt_dashboard_clone.json
+        mode: '0777'
+        force: yes
+    -
+      name: "replace dt_clone_uuid with dt_dashboard_uuid in json"
+      replace:
+        path: /tmp/dt_dashboard_clone.json
+        regexp: "{{ dt_clone_uuid }}"
+        replace: "{{ dt_dashboard_uuid }}"
+    -
+      name: "replace dashboard name with dt_dashboard_name in json"
+      replace:
+        path: /tmp/dt_dashboard_clone.json
+        regexp: "\"dashboardMetadata\":{(\"name\":\"[^\"]+\")"
+        replace: "\"dashboardMetadata\":{\"name\":\"{{ dt_dashboard_name }}\""
+    -
+      name: "replace management zone with dt_mz_64id in json"
+      replace:
+        path: /tmp/dt_dashboard_clone.json
+        regexp: "\"dashboardFilter\":{\"timeframe\":\"\",\"managementZone\":null}"
+        replace: "\"dashboardFilter\":{\"timeframe\":\"\",\"managementZone\":{\"id\":\"{{ dt_mz_64id }}\",\"name\":\"{{ dt_mz_name }}\"}}"
+    -
+      name: "replace web application id with dt_web_application_id in json"
+      replace:
+        path: /tmp/dt_dashboard_clone.json
+        regexp: "\"APPLICATION-[^\"]+\""
+        replace: "\"{{ dt_web_application_id }}\""
+    -
+      name: "replace dashboard owner with dt_owner_id in json"
+      replace:
+        path: /tmp/dt_dashboard_clone.json
+        regexp: "\"owner\":\"[^\"]+\""
+        replace: "\"owner\":\"{{ dt_owner_id }}\""
+    -
+      name: "create new dashboard with modified json"
+      uri:
+        url: "{{ dt_config_api_endpoint }}dashboards/{{ dt_dashboard_uuid }}?Api-Token={{ dt_api_token }}"
+        method: PUT
+        src: /tmp/dt_dashboard_clone.json
+        remote_src: yes
+        headers:
+          Content-Type: "application/json"
+        status_code: 201
+        return_content: yes
+      register: new_dashboard
+    -
+      name: "send email with dashboard link"
+      mail:
+        host: "{{ smtp_host }}"
+        port: "{{ smtp_port }}"
+        username: "{{ smtp_username }}"
+        password: "{{ smtp_password }}"
+        to: "{{ dt_email_receiver }}"
+        from: "{{ dt_email_receiver }}"
+        subject: "{{ dt_mz_name }} Ansible Tower Dynatrace Application Onboarding Dashboard"
+        body: "Application {{ dt_mz_name }} has been successfully onboarded.  View your application dashboard using this URL: {{ dt_base_url }}#dashboard;id={{ dt_dashboard_uuid }};"
+    -
+      name: "output dashboard uuid"
+      debug:
+        msg: "{{ dt_dashboard_uuid }}"

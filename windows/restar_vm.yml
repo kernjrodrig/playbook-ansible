@@ -1,0 +1,10 @@
+---
+- name: Reiniciar equipo Windows
+  hosts: all
+  gather_facts: no
+  tasks:
+    - name: Reiniciar el equipo Windows
+      win_reboot:
+        msg: "Reinicio iniciado por Ansible Playbook."
+        reboot_timeout: 1200  # Tiempo máximo en segundos para esperar que el equipo vuelva en línea después del reinicio
+
