@@ -5,7 +5,5 @@ vcenter_password: "Temporal123$"
 vcenter_validate_certs: false
 vcenter_cluster: "Guz-Dev"
 vm_names:
-  - "AAP-Master01"
-  - "AAP-Master02"
-  - "AAP-Master03"
+  - "proxy-rhel8"
 vcenter_destination_folder: "Ansible"
