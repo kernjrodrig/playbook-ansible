@@ -11,9 +11,9 @@
       k8s_info:
         api_version: v1
         kind: Node
-        host: "{{ openshift-cluster01 }}"  # Inyectado por la credencial Kubernetes
-        api_key: "{{ openshift-cluster01 }}"  # Inyectado por la credencial Kubernetes
-        validate_certs: false  # Cambia a true si tu clúster usa certificados válidos
+        host: "{{ ansible_eda_host }}"  # Usar variable inyectada por la credencial
+        api_key: "{{ ansible_eda_token }}"  # Usar variable inyectada por la credencial
+        validate_certs: false  # Coincide con "Verify SSL" desmarcado en la credencial
       register: nodos_info
       failed_when: nodos_info.resources is defined and nodos_info.resources | length == 0
 
