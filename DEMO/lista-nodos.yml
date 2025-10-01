@@ -4,6 +4,8 @@
   gather_facts: false
   collections:
     - kubernetes.core
+  vars:
+    output_file: "/tmp/nodos_openshift.json"  # Opcional, pero no se usará
   tasks:
     - name: Validar acceso a la API de OpenShift/Kubernetes
       k8s_info:
@@ -11,7 +13,7 @@
         kind: Node
         host: "{{ ansible_eda_host }}"  # Inyectado por la credencial
         api_key: "{{ ansible_eda_token }}"  # Inyectado por la credencial
-        validate_certs: false
+        validate_certs: false  # Coincide con la credencial
       register: nodos_info
       failed_when: nodos_info.resources is defined and nodos_info.resources | length == 0
 
