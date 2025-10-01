@@ -4,8 +4,6 @@
   gather_facts: false
   collections:
     - kubernetes.core
-  vars:
-    output_file: "/tmp/nodos_openshift.json"  # Opcional
   tasks:
     - name: Validar acceso a la API de OpenShift/Kubernetes
       k8s_info:
