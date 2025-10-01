@@ -11,9 +11,11 @@
       k8s_info:
         api_version: v1
         kind: Node
-        kubeconfig: "{{ openshift-cluster01 }}"  # Usar variable inyectada por AAP
+        host: "{{ openshift-cluster01 }}"  # Inyectado por la credencial Kubernetes
+        api_key: "{{ openshift-cluster01 }}"  # Inyectado por la credencial Kubernetes
+        validate_certs: false  # Cambia a true si tu clúster usa certificados válidos
       register: nodos_info
-      failed_when: nodos_info.resources is defined and nodos_info.resources | length == 0  # Corregido para evitar errores
+      failed_when: nodos_info.resources is defined and nodos_info.resources | length == 0
 
     - name: Mostrar información detallada de los nodos
       debug:
@@ -38,5 +40,5 @@
 
     - name: Manejar errores si no se accede a la API
       fail:
-        msg: "Error al acceder a la API. Verifica kubeconfig, token o permisos. Mensaje: {{ nodos_info.msg | default('N/A') }}"
+        msg: "Error al acceder a la API. Verifica token, URL o permisos. Mensaje: {{ nodos_info.msg | default('N/A') }}"
       when: nodos_info.failed | default(false)
