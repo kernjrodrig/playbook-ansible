@@ -30,12 +30,6 @@
           {% endfor %}
           Total de nodos: {{ nodos_info.resources | length | default(0) }}
 
-    - name: Guardar salida en archivo JSON (opcional)
-      copy:
-        content: "{{ nodos_info | to_nice_json }}"
-        dest: "{{ output_file }}"
-      when: output_file is defined
-
     - name: Manejar errores si no se accede a la API
       fail:
         msg: "Error al acceder a la API. Verifica token, URL o permisos. Mensaje: {{ nodos_info.msg | default('N/A') }}"
