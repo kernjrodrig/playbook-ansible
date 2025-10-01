@@ -1,0 +1,45 @@
+---
+- name: Listar todos los nodos en OpenShift a través de la API
+  hosts: localhost
+  gather_facts: false
+  collections:
+    - kubernetes.core  # O community.kubernetes si usas versión anterior
+
+  vars:
+    openshift_kubeconfig: "{{ lookup('env', 'KUBECONFIG') | default('/home/user/.kube/config', true) }}"  # Ruta al kubeconfig
+    output_file: "/tmp/nodos_openshift.json"  # Archivo opcional para guardar la salida
+
+  tasks:
+    - name: Validar acceso a la API de OpenShift/Kubernetes
+      k8s_info:
+        api_version: v1
+        kind: Node
+        kubeconfig: "{{ openshift_kubeconfig }}"
+      register: nodos_info
+      failed_when: nodos_info.resources | length == 0  # Falla si no hay nodos
+
+    - name: Mostrar información detallada de los nodos
+      debug:
+        msg: |
+          📊 Lista de Nodos en OpenShift:
+          {% for nodo in nodos_info.resources %}
+          - Nombre: {{ nodo.metadata.name }}
+            Estado: {{ nodo.status.conditions | selectattr('type', 'equalto', 'Ready') | map(attribute='status') | first | default('Unknown') }}
+            Roles: {{ nodo.metadata.labels | selectattr('key', 'match', '^node-role.kubernetes.io/') | map(attribute='key') | map('regex_replace', '^node-role.kubernetes.io/', '') | join(', ') }}
+            Capacidad CPU: {{ nodo.status.capacity.cpu | default('N/A') }}
+            Capacidad Memoria: {{ nodo.status.capacity.memory | default('N/A') }}
+            Dirección IP: {{ nodo.status.addresses | selectattr('type', 'equalto', 'InternalIP') | map(attribute='address') | first | default('N/A') }}
+            Versión de Kubernetes: {{ nodo.status.nodeInfo.kubeletVersion | default('N/A') }}
+          {% endfor %}
+          Total de nodos: {{ nodos_info.resources | length }}
+
+    - name: Guardar salida en archivo JSON (opcional)
+      copy:
+        content: "{{ nodos_info | to_nice_json }}"
+        dest: "{{ output_file }}"
+      when: output_file is defined
+
+    - name: Manejar errores si no se accede a la API
+      fail:
+        msg: "Error al acceder a la API. Verifica kubeconfig, token o permisos. Mensaje: {{ nodos_info.msg | default('N/A') }}"
+      when: nodos_info.failed | default(false)
