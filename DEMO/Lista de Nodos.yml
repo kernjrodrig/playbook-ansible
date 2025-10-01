@@ -3,26 +3,17 @@
   hosts: localhost
   gather_facts: false
   collections:
-    - kubernetes.core  # Incluida en el EE personalizado
-
+    - kubernetes.core
   vars:
-    output_file: "/tmp/nodos_openshift.json"  # Opcional, ajusta según necesidades
-    # Variables inyectadas por AAP Credential
-    # openshift_kubeconfig: "{{ ansible_eda_kubeconfig }}"  # Si usas kubeconfig
-    openshift_api_url: "https://api.tu-cluster.openshift.com:6443"  # URL de la API
-    openshift_token: "{{ ansible_eda_token }}"  # Token Bearer inyectado
-
+    output_file: "/tmp/nodos_openshift.json"  # Opcional
   tasks:
     - name: Validar acceso a la API de OpenShift/Kubernetes
       k8s_info:
         api_version: v1
         kind: Node
-        host: "{{ openshift_api_url }}"  # Usa si no hay kubeconfig
-        api_key: "{{ openshift_token }}"  # Autenticación por token
-        validate_certs: false  # Si usas certs autofirmados; ajusta según tu clúster
-        # kubeconfig: "{{ openshift_kubeconfig }}"  # Descomenta si prefieres kubeconfig
+        kubeconfig: "{{ ansible_eda_kubeconfig }}"  # Usar variable inyectada por AAP
       register: nodos_info
-      failed_when: nodos_info.resources is defined and (nodos_info.resources | length == 0)  # Corregido para evitar errores
+      failed_when: nodos_info.resources is defined and nodos_info.resources | length == 0  # Corregido para evitar errores
 
     - name: Mostrar información detallada de los nodos
       debug:
@@ -47,5 +38,5 @@
 
     - name: Manejar errores si no se accede a la API
       fail:
-        msg: "Error al acceder a la API. Verifica credenciales, URL o permisos. Mensaje: {{ nodos_info.msg | default('N/A') }}"
+        msg: "Error al acceder a la API. Verifica kubeconfig, token o permisos. Mensaje: {{ nodos_info.msg | default('N/A') }}"
       when: nodos_info.failed | default(false)
