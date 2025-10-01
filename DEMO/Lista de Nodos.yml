@@ -3,16 +3,26 @@
   hosts: localhost
   gather_facts: false
   collections:
-    - kubernetes.core  # O community.kubernetes si usas versión anterior
+    - kubernetes.core  # Incluida en el EE personalizado
+
+  vars:
+    output_file: "/tmp/nodos_openshift.json"  # Opcional, ajusta según necesidades
+    # Variables inyectadas por AAP Credential
+    # openshift_kubeconfig: "{{ ansible_eda_kubeconfig }}"  # Si usas kubeconfig
+    openshift_api_url: "https://api.tu-cluster.openshift.com:6443"  # URL de la API
+    openshift_token: "{{ ansible_eda_token }}"  # Token Bearer inyectado
 
   tasks:
     - name: Validar acceso a la API de OpenShift/Kubernetes
       k8s_info:
         api_version: v1
         kind: Node
-        kubeconfig: "{{ openshift_kubeconfig }}"
+        host: "{{ openshift_api_url }}"  # Usa si no hay kubeconfig
+        api_key: "{{ openshift_token }}"  # Autenticación por token
+        validate_certs: false  # Si usas certs autofirmados; ajusta según tu clúster
+        # kubeconfig: "{{ openshift_kubeconfig }}"  # Descomenta si prefieres kubeconfig
       register: nodos_info
-      failed_when: nodos_info.resources | length == 0  # Falla si no hay nodos
+      failed_when: nodos_info.resources is defined and (nodos_info.resources | length == 0)  # Corregido para evitar errores
 
     - name: Mostrar información detallada de los nodos
       debug:
@@ -21,13 +31,13 @@
           {% for nodo in nodos_info.resources %}
           - Nombre: {{ nodo.metadata.name }}
             Estado: {{ nodo.status.conditions | selectattr('type', 'equalto', 'Ready') | map(attribute='status') | first | default('Unknown') }}
-            Roles: {{ nodo.metadata.labels | selectattr('key', 'match', '^node-role.kubernetes.io/') | map(attribute='key') | map('regex_replace', '^node-role.kubernetes.io/', '') | join(', ') }}
+            Roles: {{ nodo.metadata.labels | dict2items | selectattr('key', 'match', '^node-role.kubernetes.io/') | map(attribute='key') | map('regex_replace', '^node-role.kubernetes.io/', '') | join(', ') | default('N/A') }}
             Capacidad CPU: {{ nodo.status.capacity.cpu | default('N/A') }}
             Capacidad Memoria: {{ nodo.status.capacity.memory | default('N/A') }}
             Dirección IP: {{ nodo.status.addresses | selectattr('type', 'equalto', 'InternalIP') | map(attribute='address') | first | default('N/A') }}
             Versión de Kubernetes: {{ nodo.status.nodeInfo.kubeletVersion | default('N/A') }}
           {% endfor %}
-          Total de nodos: {{ nodos_info.resources | length }}
+          Total de nodos: {{ nodos_info.resources | length | default(0) }}
 
     - name: Guardar salida en archivo JSON (opcional)
       copy:
@@ -37,5 +47,5 @@
 
     - name: Manejar errores si no se accede a la API
       fail:
-        msg: "Error al acceder a la API. Verifica kubeconfig, token o permisos. Mensaje: {{ nodos_info.msg | default('N/A') }}"
+        msg: "Error al acceder a la API. Verifica credenciales, URL o permisos. Mensaje: {{ nodos_info.msg | default('N/A') }}"
       when: nodos_info.failed | default(false)
