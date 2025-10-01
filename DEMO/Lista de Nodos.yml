@@ -5,10 +5,6 @@
   collections:
     - kubernetes.core  # O community.kubernetes si usas versión anterior
 
-  vars:
-    openshift_kubeconfig: "{{ lookup('env', 'KUBECONFIG') | default('/home/user/.kube/config', true) }}"  # Ruta al kubeconfig
-    output_file: "/tmp/nodos_openshift.json"  # Archivo opcional para guardar la salida
-
   tasks:
     - name: Validar acceso a la API de OpenShift/Kubernetes
       k8s_info:
