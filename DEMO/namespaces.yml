@@ -1,0 +1,15 @@
+# Inventario dinámico para OpenShift: namespaces (ej. estadisticas) y recursos.
+# Uso en AAP: Source type = "Sourced from a Project"; apuntar este archivo en el proyecto.
+# Credential: OpenShift or Kubernetes API Bearer Token (host + token).
+# EE: uno que tenga la colección kubernetes.core (p. ej. EE por defecto).
+
+plugin: kubernetes.core.k8s
+connections:
+  - namespaces:
+      - estadisticas
+      - default
+    # Opcional: filtrar por etiquetas
+    # labels: {}
+# Para descubrir todos los namespaces a los que la credencial tiene acceso:
+# connections:
+#   - namespaces: []
