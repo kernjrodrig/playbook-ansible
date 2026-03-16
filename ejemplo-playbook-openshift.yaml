@@ -5,12 +5,7 @@
 - name: Administrar recursos en OpenShift
   hosts: localhost
   gather_facts: false
-  
-  vars:
-    # Estas variables se pueden definir aquí o en el inventario
-    openshift_host: "{{ openshift_host | default('https://api.prd-ocp.guzdan.com:6443') }}"
-    openshift_token: "{{ openshift_token | default('sha256~1XybYvXKXx-hXHFKOZPgRgr5C4caHoqdRUWlmIveHig') }}"
-    namespace: "{{ openshift_namespace | default('default') }}"
+
   
   tasks:
     - name: Verificar conexión al cluster
