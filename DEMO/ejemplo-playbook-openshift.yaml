@@ -9,6 +9,7 @@
       kubernetes.core.k8s_info:
         api_version: v1
         kind: Namespace
+        verify_ssl: false
       register: ns_list
 
     - name: Mostrar nombres de los Namespaces encontrados
