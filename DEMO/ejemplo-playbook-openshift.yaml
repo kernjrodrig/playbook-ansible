@@ -1,6 +1,6 @@
 ---
 - name: Consultar Namespaces de OpenShift
-  hosts: localhost
+  hosts: all
   gather_facts: false
   connection: local
 
