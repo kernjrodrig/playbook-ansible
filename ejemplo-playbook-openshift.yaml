@@ -1,108 +1,23 @@
 ---
-# Ejemplo de playbook para administrar OpenShift desde AAP
-# Este playbook demuestra cómo usar las variables del inventario
-
-- name: Administrar recursos en OpenShift
+- name: Consultar Namespaces de OpenShift
   hosts: localhost
   gather_facts: false
+  connection: local
 
-  
   tasks:
-    - name: Verificar conexión al cluster
+    - name: Obtener lista de todos los Namespaces
       kubernetes.core.k8s_info:
         api_version: v1
         kind: Namespace
-        kubeconfig: null
-        host: "{{ openshift_host }}"
-        api_key: "{{ openshift_token }}"
-        verify_ssl: true
-      register: namespaces
-      failed_when: false
-    
-    - name: Mostrar namespaces disponibles
-      debug:
-        msg: "Namespaces encontrados: {{ namespaces.resources | map(attribute='metadata.name') | list }}"
-      when: namespaces.resources is defined
-    
-    - name: Crear namespace de ejemplo si no existe
-      kubernetes.core.k8s:
-        state: present
-        definition:
-          apiVersion: v1
-          kind: Namespace
-          metadata:
-            name: "{{ namespace }}"
-        host: "{{ openshift_host }}"
-        api_key: "{{ openshift_token }}"
-        verify_ssl: true
-    
-    - name: Crear Deployment de ejemplo
-      kubernetes.core.k8s:
-        state: present
-        definition:
-          apiVersion: apps/v1
-          kind: Deployment
-          metadata:
-            name: test-app
-            namespace: "{{ namespace }}"
-          spec:
-            replicas: 2
-            selector:
-              matchLabels:
-                app: test-app
-            template:
-              metadata:
-                labels:
-                  app: test-app
-              spec:
-                containers:
-                - name: app
-                  image: registry.redhat.io/ubi8/ubi:latest
-                  command: ["sleep", "infinity"]
-                  resources:
-                    requests:
-                      cpu: 100m
-                      memory: 128Mi
-                    limits:
-                      cpu: 500m
-                      memory: 512Mi
-        host: "{{ openshift_host }}"
-        api_key: "{{ openshift_token }}"
-        verify_ssl: true
-    
-    - name: Crear Service
-      kubernetes.core.k8s:
-        state: present
-        definition:
-          apiVersion: v1
-          kind: Service
-          metadata:
-            name: test-app-service
-            namespace: "{{ namespace }}"
-          spec:
-            selector:
-              app: test-app
-            ports:
-            - port: 80
-              targetPort: 8080
-        host: "{{ openshift_host }}"
-        api_key: "{{ openshift_token }}"
-        verify_ssl: true
-    
-    - name: Crear Route de OpenShift (requiere collection community.okd)
-      community.okd.openshift_route:
-        state: present
-        name: test-app-route
-        namespace: "{{ namespace }}"
-        to:
-          kind: Service
-          name: test-app-service
-        port:
-          targetPort: 80
-        tls:
-          termination: edge
-        host: "{{ openshift_host }}"
-        token: "{{ openshift_token }}"
-        verify_ssl: true
-      when: "'community.okd' in ansible_collections"
+      register: ns_list
 
+    - name: Mostrar nombres de los Namespaces encontrados
+      ansible.builtin.debug:
+        msg: "Namespace encontrado: {{ item.metadata.name }}"
+      loop: "{{ ns_list.resources }}"
+      loop_control:
+        label: "{{ item.metadata.name }}"
+
+    - name: Resumen del clúster
+      ansible.builtin.debug:
+        msg: "El clúster tiene actualmente {{ ns_list.resources | length }} namespaces."
