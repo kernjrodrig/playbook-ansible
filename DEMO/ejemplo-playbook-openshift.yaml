@@ -1,11 +1,23 @@
-- name: Probar conexión a OpenShift
+---
+- name: Consultar Namespaces de OpenShift
   hosts: localhost
+  gather_facts: false
   connection: local
-  tasks:
-    - name: Obtener información del cluster
-      kubernetes.core.k8s_cluster_info:
-      register: api_info
 
-    - name: Mostrar versión del cluster
-      debug:
-        msg: "Conectado a OpenShift. Versión: {{ api_info.version.server_version.gitVersion }}"
+  tasks:
+    - name: Obtener lista de todos los Namespaces
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Namespace
+      register: ns_list
+
+    - name: Mostrar nombres de los Namespaces encontrados
+      ansible.builtin.debug:
+        msg: "Namespace encontrado: {{ item.metadata.name }}"
+      loop: "{{ ns_list.resources }}"
+      loop_control:
+        label: "{{ item.metadata.name }}"
+
+    - name: Resumen del clúster
+      ansible.builtin.debug:
+        msg: "El clúster tiene actualmente {{ ns_list.resources | length }} namespaces."
